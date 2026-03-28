@@ -34,6 +34,24 @@
       </button>
     </div>
 
+    <mat-divider [vertical]="true"></mat-divider>
+
+    <div class="tool-group">
+      <span class="tool-label">Import</span>
+      <button mat-stroked-button (click)="triggerImport()"
+              matTooltip="Import a PNG image (must be {{ cellCount }}×{{ cellCount }} pixels)">
+        <mat-icon>upload_file</mat-icon> Import PNG
+      </button>
+      <!-- Hidden file input -->
+      <input #fileInput type="file" accept="image/png" class="hidden-input"
+             (change)="onFileSelected($event)">
+    </div>
+
+  </div>
+
+  <div class="import-error" *ngIf="importError">
+    <mat-icon>error_outline</mat-icon>
+    <span>{{ importError }}</span>
   </div>
 
   <div class="canvas-wrapper">

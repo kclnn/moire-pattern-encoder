@@ -44,6 +44,21 @@ button.active {
   touch-action: none;
 }
 
+.hidden-input {
+  display: none;
+}
+
+.import-error {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #c62828;
+  font-size: 13px;
+  padding: 6px 0 2px;
+
+  mat-icon { font-size: 18px; width: 18px; height: 18px; }
+}
+
 .hint {
   margin-top: 8px;
   font-size: 11px;
