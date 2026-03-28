@@ -1,0 +1,15 @@
+<div class="app-layout">
+  <mat-toolbar color="primary" class="toolbar">
+    <mat-icon class="toolbar-icon">grid_on</mat-icon>
+    <span>Moiré Pattern Visualizer</span>
+  </mat-toolbar>
+
+  <mat-sidenav-container class="sidenav-container">
+    <mat-sidenav mode="side" opened class="sidenav">
+      <app-control-panel></app-control-panel>
+    </mat-sidenav>
+    <mat-sidenav-content class="canvas-area">
+      <app-moire-canvas></app-moire-canvas>
+    </mat-sidenav-content>
+  </mat-sidenav-container>
+</div>
