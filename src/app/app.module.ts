@@ -17,9 +17,9 @@ import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { CommonModule } from '@angular/common';
 
 import { AppComponent } from './app.component';
-import { MoireCanvasComponent } from './components/moire-canvas/moire-canvas.component';
-import { ControlPanelComponent } from './components/control-panel/control-panel.component';
-import { PatternEditorComponent } from './components/pattern-editor/pattern-editor.component';
+import { MoireCanvasComponent } from './components/moire-canvas.component';
+import { ControlPanelComponent } from './components/control-panel.component';
+import { PatternEditorComponent } from './components/pattern-editor.component';
 
 @NgModule({
   declarations: [

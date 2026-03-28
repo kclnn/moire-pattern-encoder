@@ -8,13 +8,29 @@ import {
   ViewChild,
 } from '@angular/core';
 import { Subscription } from 'rxjs';
-import { MoireStateService } from '../../services/moire-state.service';
-import { render } from '../../utils/canvas-renderer';
+import { MoireStateService } from '../services/moire-state.service';
+import { render } from '../utils/canvas-renderer';
 
 @Component({
   selector: 'app-moire-canvas',
-  templateUrl: './moire-canvas.component.html',
-  styleUrls: ['./moire-canvas.component.scss'],
+  template: `<div class="canvas-container" #container><canvas #canvas></canvas></div>`,
+  styles: [`
+:host {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.canvas-container {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+
+  canvas {
+    display: block;
+  }
+}
+`],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MoireCanvasComponent implements AfterViewInit, OnDestroy {

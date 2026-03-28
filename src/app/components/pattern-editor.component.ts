@@ -17,8 +17,153 @@ type PaintMode = 'white' | 'black';
 
 @Component({
   selector: 'app-pattern-editor',
-  templateUrl: './pattern-editor.component.html',
-  styleUrls: ['./pattern-editor.component.scss'],
+  template: `
+<h2 mat-dialog-title>Edit Pattern</h2>
+
+<mat-dialog-content>
+  <div class="toolbar">
+
+    <div class="tool-group">
+      <span class="tool-label">Paint</span>
+      <button mat-icon-button
+              [class.active]="paintMode === 'white'"
+              (click)="paintMode = 'white'"
+              matTooltip="Paint white">
+        <mat-icon>radio_button_unchecked</mat-icon>
+      </button>
+      <button mat-icon-button
+              [class.active]="paintMode === 'black'"
+              (click)="paintMode = 'black'"
+              matTooltip="Paint black">
+        <mat-icon>radio_button_checked</mat-icon>
+      </button>
+    </div>
+
+    <mat-divider [vertical]="true"></mat-divider>
+
+    <div class="tool-group">
+      <span class="tool-label">Fill</span>
+      <button mat-icon-button (click)="fillAll(255)" matTooltip="Fill all white">
+        <mat-icon>crop_square</mat-icon>
+      </button>
+      <button mat-icon-button (click)="fillAll(0)" matTooltip="Fill all black">
+        <mat-icon>square</mat-icon>
+      </button>
+      <button mat-stroked-button (click)="fillCheckerboard()" matTooltip="Fill with 10×10 checkerboard">
+        <mat-icon>grid_4x4</mat-icon> Checkerboard
+      </button>
+    </div>
+
+    <mat-divider [vertical]="true"></mat-divider>
+
+    <div class="tool-group">
+      <span class="tool-label">Import</span>
+      <button mat-stroked-button (click)="triggerImport()"
+              matTooltip="Import a PNG image (must be {{ cellCount }}×{{ cellCount }} pixels)">
+        <mat-icon>upload_file</mat-icon> Import PNG
+      </button>
+      <!-- Hidden file input -->
+      <input #fileInput type="file" accept="image/png" class="hidden-input"
+             (change)="onFileSelected($event)">
+    </div>
+
+  </div>
+
+  <div class="import-error" *ngIf="importError">
+    <mat-icon>error_outline</mat-icon>
+    <span>{{ importError }}</span>
+  </div>
+
+  <div class="canvas-wrapper">
+    <canvas #editorCanvas
+            class="editor-canvas"
+            (mousedown)="onMouseDown($event)"
+            (touchstart)="onTouchStart($event)">
+    </canvas>
+  </div>
+
+  <div class="hint">
+    {{ cellCount }}×{{ cellCount }} cells &mdash; each pixel corresponds to one grid cell
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="cancel()">Cancel</button>
+  <button mat-raised-button color="primary" (click)="apply()">Apply Pattern</button>
+</mat-dialog-actions>
+`,
+  styles: [`
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 8px 0 12px;
+  flex-wrap: wrap;
+}
+
+.tool-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.tool-label {
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.6);
+  margin-right: 2px;
+}
+
+button.active {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 50%;
+}
+
+.canvas-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+  overflow: hidden;
+  background: #888;
+  cursor: crosshair;
+}
+
+.editor-canvas {
+  display: block;
+  width:  480px;
+  height: 480px;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  touch-action: none;
+}
+
+.hidden-input {
+  display: none;
+}
+
+.import-error {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #c62828;
+  font-size: 13px;
+  padding: 6px 0 2px;
+
+  mat-icon { font-size: 18px; width: 18px; height: 18px; }
+}
+
+.hint {
+  margin-top: 8px;
+  font-size: 11px;
+  color: rgba(0, 0, 0, 0.5);
+  text-align: center;
+}
+
+mat-dialog-content {
+  min-width: 520px;
+}
+`],
 })
 export class PatternEditorComponent implements AfterViewInit, OnDestroy {
   @ViewChild('editorCanvas') canvasRef!: ElementRef<HTMLCanvasElement>;
