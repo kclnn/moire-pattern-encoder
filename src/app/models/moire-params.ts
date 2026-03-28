@@ -1,7 +1,5 @@
 export interface CustomPattern {
-  /** Source image, N² pixels (0 = black, 255 = white), column-major: index = i*N + j */
-  image:       Uint8Array;
-  /** Per-cell x-phase offset for front grid vertical lines (cm), N² values */
+  /** Per-cell x-phase offset for front grid vertical lines (cm), N² values, index = i*N + j */
   frontPhaseX: Float32Array;
   /** Per-cell y-phase offset for back grid horizontal lines in back space (cm), N² values */
   backPhaseY:  Float32Array;
@@ -26,18 +24,27 @@ export interface MoireParams {
   bgColor: string;
   /** Grid line color */
   lineColor: string;
-  /** Optional custom pattern overriding the uniform moiré */
+  /**
+   * Source image drawn by the user (N² pixels, 0 = black, 255 = white, column-major: i*N+j).
+   * Persists across parameter changes; present whenever the user has drawn a pattern.
+   */
+  patternImage?: Uint8Array;
+  /**
+   * Encoded phase offsets derived from patternImage + the params at the time "Apply" was clicked.
+   * Absent when patternImage is pending re-application (e.g. after cellCount changed).
+   * When present, this drives the pixel-level renderer.
+   */
   customPattern?: CustomPattern;
 }
 
 export const DEFAULT_PARAMS: MoireParams = {
-  cellCount: 500,
+  cellCount:      500,
   thicknessRatio: 0.25,
-  gridSize: 500,
-  depthGap: 10,
-  viewerDist: 1000,
-  viewerX: 0,
-  viewerY: 0,
-  bgColor: '#000000',
-  lineColor: '#ffffff',
+  gridSize:       500,
+  depthGap:       10,
+  viewerDist:     1000,
+  viewerX:        0,
+  viewerY:        0,
+  bgColor:        '#000000',
+  lineColor:      '#ffffff',
 };

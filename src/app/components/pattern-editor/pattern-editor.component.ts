@@ -118,7 +118,7 @@ export class PatternEditorComponent implements AfterViewInit, OnDestroy {
 
   // ---- Toolbar actions ----
 
-  fillCheckerboard(size = 10): void {
+  fillCheckerboard(size = 50): void {
     const N = this.cellCount;
     for (let i = 0; i < N; i++) {
       for (let j = 0; j < N; j++) {

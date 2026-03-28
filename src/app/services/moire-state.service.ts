@@ -9,23 +9,45 @@ export class MoireStateService {
   readonly params$ = this.paramsSubject.asObservable();
 
   updateParams(partial: Partial<MoireParams>): void {
-    let next = { ...this.paramsSubject.value, ...partial };
-    // Re-encode whenever grid/viewer params change while a custom pattern is active
-    if (next.customPattern) {
-      const offsets = encodePattern(next.customPattern.image, next);
-      next = { ...next, customPattern: { ...next.customPattern, ...offsets } };
+    const prev = this.paramsSubject.value;
+    const next = { ...prev, ...partial };
+
+    // If cellCount changed while a custom pattern is active, deactivate the
+    // encoded offsets (they were computed for the old N) but keep the image so
+    // the user can re-apply after adjusting the cell count.
+    if (partial.cellCount !== undefined && partial.cellCount !== prev.cellCount) {
+      delete next.customPattern;
     }
+
     this.paramsSubject.next(next);
   }
 
-  setCustomPattern(image: Uint8Array): void {
-    const params  = this.paramsSubject.value;
-    const offsets = encodePattern(image, params);
-    this.paramsSubject.next({ ...params, customPattern: { image, ...offsets } });
+  /**
+   * Called when the user confirms a new image in the pattern editor dialog.
+   * Stores the image but does NOT encode yet — the user must click "Apply Pattern".
+   */
+  storePatternImage(image: Uint8Array): void {
+    this.paramsSubject.next({
+      ...this.paramsSubject.value,
+      patternImage:  image,
+      customPattern: undefined,
+    });
   }
 
-  clearCustomPattern(): void {
-    const { customPattern: _, ...rest } = this.paramsSubject.value;
+  /**
+   * Encodes the stored patternImage with the current params and activates rendering.
+   * No-op if no patternImage is stored.
+   */
+  applyPattern(): void {
+    const params = this.paramsSubject.value;
+    if (!params.patternImage) return;
+    const { frontPhaseX, backPhaseY } = encodePattern(params.patternImage, params);
+    this.paramsSubject.next({ ...params, customPattern: { frontPhaseX, backPhaseY } });
+  }
+
+  /** Removes both the stored image and the active encoded pattern. */
+  clearPattern(): void {
+    const { patternImage: _img, customPattern: _cp, ...rest } = this.paramsSubject.value;
     this.paramsSubject.next(rest as MoireParams);
   }
 

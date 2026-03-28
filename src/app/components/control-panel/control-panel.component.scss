@@ -92,6 +92,8 @@ mat-divider {
   gap: 6px;
   font-size: 13px;
   margin-bottom: 4px;
+
+  &.pending span { color: #e65100; }
 }
 
 .actions {

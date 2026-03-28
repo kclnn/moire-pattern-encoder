@@ -24,8 +24,10 @@ interface ComputedValues {
 })
 export class ControlPanelComponent implements OnInit, OnDestroy {
   form!: FormGroup;
-  computed$!:   ReturnType<typeof this.buildComputed$>;
-  hasPattern$!: ReturnType<typeof this.buildHasPattern$>;
+  computed$!:       ReturnType<typeof this.buildComputed$>;
+  hasImage$!:       ReturnType<typeof this.buildHasImage$>;
+  patternActive$!:  ReturnType<typeof this.buildPatternActive$>;
+  patternPending$!: ReturnType<typeof this.buildPatternPending$>;
 
   private subscription = new Subscription();
 
@@ -35,12 +37,10 @@ export class ControlPanelComponent implements OnInit, OnDestroy {
     private svgExport: SvgExportService,
     private dialog: MatDialog,
   ) {
-    this.computed$   = this.buildComputed$();
-    this.hasPattern$ = this.buildHasPattern$();
-  }
-
-  private buildHasPattern$() {
-    return this.state.params$.pipe(map(p => !!p.customPattern));
+    this.computed$       = this.buildComputed$();
+    this.hasImage$       = this.buildHasImage$();
+    this.patternActive$  = this.buildPatternActive$();
+    this.patternPending$ = this.buildPatternPending$();
   }
 
   private buildComputed$() {
@@ -57,6 +57,21 @@ export class ControlPanelComponent implements OnInit, OnDestroy {
         } as ComputedValues;
       })
     );
+  }
+
+  /** True when a pattern image has been drawn (regardless of whether offsets are computed). */
+  private buildHasImage$() {
+    return this.state.params$.pipe(map(p => !!p.patternImage));
+  }
+
+  /** True when encoded offsets are active (currently driving the renderer). */
+  private buildPatternActive$() {
+    return this.state.params$.pipe(map(p => !!p.customPattern));
+  }
+
+  /** True when image exists but offsets are not yet computed (e.g. after cellCount change). */
+  private buildPatternPending$() {
+    return this.state.params$.pipe(map(p => !!p.patternImage && !p.customPattern));
   }
 
   ngOnInit(): void {
@@ -92,19 +107,23 @@ export class ControlPanelComponent implements OnInit, OnDestroy {
     const current = this.state.currentParams;
     const data: PatternEditorData = {
       cellCount:     current.cellCount,
-      existingImage: current.customPattern?.image,
+      existingImage: current.patternImage,
     };
     const ref = this.dialog.open<PatternEditorComponent, PatternEditorData, Uint8Array | null>(
       PatternEditorComponent,
       { data, disableClose: false },
     );
     ref.afterClosed().subscribe(image => {
-      if (image) this.state.setCustomPattern(image);
+      if (image) this.state.storePatternImage(image);
     });
   }
 
+  applyPattern(): void {
+    this.state.applyPattern();
+  }
+
   clearPattern(): void {
-    this.state.clearCustomPattern();
+    this.state.clearPattern();
   }
 
   reset(): void {
