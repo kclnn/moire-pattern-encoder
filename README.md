@@ -1,5 +1,9 @@
 # MoireVisualizer
 
+This is a tool to change the moire pattern when overlaying two grids to a predetermined pattern.
+
+Mostly written with Claude Code, functionality is experimental.
+
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 18.2.21.
 
 ## Development server
