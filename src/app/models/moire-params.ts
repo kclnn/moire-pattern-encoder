@@ -24,6 +24,8 @@ export interface MoireParams {
   bgColor: string;
   /** Grid line color */
   lineColor: string;
+  /** Which grids to render/export */
+  gridVisibility: 'both' | 'front' | 'back';
   /**
    * Source image drawn by the user (N² pixels, 0 = black, 255 = white, column-major: i*N+j).
    * Persists across parameter changes; present whenever the user has drawn a pattern.
@@ -45,6 +47,7 @@ export const DEFAULT_PARAMS: MoireParams = {
   viewerDist:     1000,
   viewerX:        0,
   viewerY:        0,
-  bgColor:        '#000000',
-  lineColor:      '#ffffff',
+  bgColor:         '#000000',
+  lineColor:       '#ffffff',
+  gridVisibility:  'both',
 };

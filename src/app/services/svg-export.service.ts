@@ -55,8 +55,14 @@ export class SvgExportService {
     const tx   = viewerX * (1 - f);
     const ty   = viewerY * (1 - f);
 
-    const backTransform = `matrix(${f} 0 0 ${f} ${tx} ${ty})`;
-    const rects = this.gridToSvgRects(params);
+    const backTransform  = `matrix(${f} 0 0 ${f} ${tx} ${ty})`;
+    const rects          = this.gridToSvgRects(params);
+    const { gridVisibility } = params;
+
+    const backGroup  = gridVisibility !== 'front'
+      ? `<g fill="${lineColor}" transform="${backTransform}">\n    ${rects}\n  </g>` : '';
+    const frontGroup = gridVisibility !== 'back'
+      ? `<g fill="${lineColor}">\n    ${rects}\n  </g>` : '';
 
     return `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg"
@@ -64,12 +70,8 @@ export class SvgExportService {
      width="${gridSize}cm" height="${gridSize}cm">
   <title>Moiré Pattern</title>
   <rect x="${-half}" y="${-half}" width="${gridSize}" height="${gridSize}" fill="${bgColor}"/>
-  <g fill="${lineColor}" transform="${backTransform}">
-    ${rects}
-  </g>
-  <g fill="${lineColor}">
-    ${rects}
-  </g>
+  ${backGroup}
+  ${frontGroup}
 </svg>`;
   }
 

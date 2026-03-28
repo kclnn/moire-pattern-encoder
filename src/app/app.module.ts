@@ -13,6 +13,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialogModule } from '@angular/material/dialog';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { CommonModule } from '@angular/common';
 
 import { AppComponent } from './app.component';
@@ -41,6 +42,7 @@ import { PatternEditorComponent } from './components/pattern-editor/pattern-edit
     MatDividerModule,
     MatTooltipModule,
     MatDialogModule,
+    MatButtonToggleModule,
   ],
   providers: [
     provideAnimationsAsync(),

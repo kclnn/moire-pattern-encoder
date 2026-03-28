@@ -58,6 +58,12 @@
   }
 }
 
+.visibility-toggle {
+  width: 100%;
+
+  mat-button-toggle { flex: 1; }
+}
+
 .color-input {
   width: 48px;
   height: 32px;

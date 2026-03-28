@@ -82,6 +82,15 @@
   <!-- Appearance -->
   <div class="section-title">Appearance</div>
 
+  <div class="field">
+    <label>Visible grids</label>
+    <mat-button-toggle-group formControlName="gridVisibility" class="visibility-toggle">
+      <mat-button-toggle value="front" matTooltip="Show front grid only">Front</mat-button-toggle>
+      <mat-button-toggle value="both"  matTooltip="Show both grids (moiré)">Both</mat-button-toggle>
+      <mat-button-toggle value="back"  matTooltip="Show back grid only">Back</mat-button-toggle>
+    </mat-button-toggle-group>
+  </div>
+
   <div class="field color-field">
     <label>Background</label>
     <input type="color" formControlName="bgColor" class="color-input">

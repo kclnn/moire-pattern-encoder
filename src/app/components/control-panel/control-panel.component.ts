@@ -85,6 +85,7 @@ export class ControlPanelComponent implements OnInit, OnDestroy {
       viewerY:        [p.viewerY],
       bgColor:        [p.bgColor],
       lineColor:      [p.lineColor],
+      gridVisibility: [p.gridVisibility],
     });
 
     this.subscription.add(
@@ -98,6 +99,7 @@ export class ControlPanelComponent implements OnInit, OnDestroy {
           viewerY:        values.viewerY,
           bgColor:        values.bgColor,
           lineColor:      values.lineColor,
+          gridVisibility: values.gridVisibility,
         });
       })
     );
@@ -136,6 +138,7 @@ export class ControlPanelComponent implements OnInit, OnDestroy {
       viewerY:        DEFAULT_PARAMS.viewerY,
       bgColor:        DEFAULT_PARAMS.bgColor,
       lineColor:      DEFAULT_PARAMS.lineColor,
+      gridVisibility: DEFAULT_PARAMS.gridVisibility,
     });
   }
 

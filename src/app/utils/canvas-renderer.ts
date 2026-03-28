@@ -23,7 +23,7 @@ function drawGrid(ctx: CanvasRenderingContext2D, params: MoireParams): void {
 }
 
 function renderUniform(canvas: HTMLCanvasElement, params: MoireParams): void {
-  const { gridSize, viewerX, viewerY, viewerDist, depthGap, bgColor } = params;
+  const { gridSize, viewerX, viewerY, viewerDist, depthGap, bgColor, gridVisibility } = params;
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
 
@@ -43,12 +43,16 @@ function renderUniform(canvas: HTMLCanvasElement, params: MoireParams): void {
   const tx = viewerX * (1 - f);
   const ty = viewerY * (1 - f);
 
-  ctx.save();
-  ctx.transform(f, 0, 0, f, tx, ty);
-  drawGrid(ctx, params);
-  ctx.restore();
+  if (gridVisibility !== 'front') {
+    ctx.save();
+    ctx.transform(f, 0, 0, f, tx, ty);
+    drawGrid(ctx, params);
+    ctx.restore();
+  }
 
-  drawGrid(ctx, params);
+  if (gridVisibility !== 'back') {
+    drawGrid(ctx, params);
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -60,7 +64,8 @@ function renderWithPattern(canvas: HTMLCanvasElement, params: MoireParams): void
   if (!ctx || !params.customPattern) return;
 
   const { gridSize, viewerX, viewerY, viewerDist, depthGap,
-          cellCount, thicknessRatio, bgColor, lineColor, customPattern } = params;
+          cellCount, thicknessRatio, bgColor, lineColor,
+          gridVisibility, customPattern } = params;
   const { frontPhaseX, backPhaseY } = customPattern;
 
   const W     = canvas.width;
@@ -70,76 +75,60 @@ function renderWithPattern(canvas: HTMLCanvasElement, params: MoireParams): void
   const N  = cellCount;
   const P  = gridSize / N;
   const T  = thicknessRatio * P;
-  const Th = T / 2;                    // opaque half-width on each side of a line
+  const Th = T / 2;
   const d  = Math.max(0.001, depthGap);
   const f  = viewerDist / (viewerDist + d);
-  const tx = viewerX * (1 - f);        // front-space translation of back projection
+  const tx = viewerX * (1 - f);
   const ty = viewerY * (1 - f);
 
-  // Parse bgColor and lineColor into R,G,B components
   const bg   = hexToRgb(bgColor);
   const line = hexToRgb(lineColor);
 
   const imageData = ctx.createImageData(W, H);
   const data      = imageData.data;
 
+  const showFront = gridVisibility !== 'back';
+  const showBack  = gridVisibility !== 'front';
+
   for (let py = 0; py < H; py++) {
     for (let px = 0; px < W; px++) {
-      // Front-grid cm coordinates, corner-origin [0, gridSize]
       const cx = (px - W / 2) / scale + gridSize / 2;
       const cy = (py - H / 2) / scale + gridSize / 2;
 
       const base = (py * W + px) * 4;
 
       if (cx < 0 || cx >= gridSize || cy < 0 || cy >= gridSize) {
-        data[base]     = bg.r;
-        data[base + 1] = bg.g;
-        data[base + 2] = bg.b;
-        data[base + 3] = 255;
+        data[base] = bg.r; data[base+1] = bg.g; data[base+2] = bg.b; data[base+3] = 255;
         continue;
       }
 
-      // Front-grid cell indices
-      const i  = Math.min(Math.floor(cx / P), N - 1);
-      const j  = Math.min(Math.floor(cy / P), N - 1);
-      const fi = i * N + j;
+      let frontOpaque = false;
+      if (showFront) {
+        const i  = Math.min(Math.floor(cx / P), N - 1);
+        const j  = Math.min(Math.floor(cy / P), N - 1);
+        const fi = i * N + j;
 
-      // Front x-opacity (per-cell phase shift)
-      const ux     = posMod(cx - frontPhaseX[fi], P);
-      const fOpaX  = ux < Th || ux > P - Th;
+        const ux = posMod(cx - frontPhaseX[fi], P);
+        const uy = posMod(cy, P);
+        frontOpaque = (ux < Th || ux > P - Th) || (uy < Th || uy > P - Th);
+      }
 
-      // Front y-opacity (no phase shift for front horizontal lines)
-      const uy    = posMod(cy, P);
-      const fOpaY = uy < Th || uy > P - Th;
-
-      const frontOpaque = fOpaX || fOpaY;
-
-      let bright = false;
-      if (!frontOpaque) {
-        // Back-grid cm coordinates (corner-origin)
-        const bx = (cx - gridSize / 2 - tx) / f + gridSize / 2;
-        const by = (cy - gridSize / 2 - ty) / f + gridSize / 2;
-
+      let backOpaque = false;
+      if (showBack && !frontOpaque) {
+        const bx  = (cx - gridSize / 2 - tx) / f + gridSize / 2;
+        const by  = (cy - gridSize / 2 - ty) / f + gridSize / 2;
         const bi  = Math.min(Math.max(Math.floor(bx / P), 0), N - 1);
         const bj  = Math.min(Math.max(Math.floor(by / P), 0), N - 1);
         const bfi = bi * N + bj;
 
-        // Back x-opacity (no phase shift for back vertical lines)
-        const ubx    = posMod(bx, P);
-        const bOpaX  = ubx < Th || ubx > P - Th;
-
-        // Back y-opacity (per-cell phase shift)
-        const uby   = posMod(by - backPhaseY[bfi], P);
-        const bOpaY = uby < Th || uby > P - Th;
-
-        bright = !(bOpaX || bOpaY);
+        const ubx = posMod(bx, P);
+        const uby = posMod(by - backPhaseY[bfi], P);
+        backOpaque = (ubx < Th || ubx > P - Th) || (uby < Th || uby > P - Th);
       }
 
+      const bright = !frontOpaque && !backOpaque;
       const c = bright ? line : bg;
-      data[base]     = c.r;
-      data[base + 1] = c.g;
-      data[base + 2] = c.b;
-      data[base + 3] = 255;
+      data[base] = c.r; data[base+1] = c.g; data[base+2] = c.b; data[base+3] = 255;
     }
   }
 
@@ -150,7 +139,6 @@ function renderWithPattern(canvas: HTMLCanvasElement, params: MoireParams): void
 // Helpers
 // ---------------------------------------------------------------------------
 
-/** Always-positive modulo */
 function posMod(x: number, m: number): number {
   return ((x % m) + m) % m;
 }
