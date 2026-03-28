@@ -1,10 +1,15 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
+import { MatDialog } from '@angular/material/dialog';
 import { map, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { DEFAULT_PARAMS } from '../../models/moire-params';
 import { MoireStateService } from '../../services/moire-state.service';
 import { SvgExportService } from '../../services/svg-export.service';
+import {
+  PatternEditorComponent,
+  PatternEditorData,
+} from '../pattern-editor/pattern-editor.component';
 
 interface ComputedValues {
   scaleFactor: number;
@@ -19,28 +24,35 @@ interface ComputedValues {
 })
 export class ControlPanelComponent implements OnInit, OnDestroy {
   form!: FormGroup;
-  computed$!: ReturnType<typeof this.buildComputed$>;
+  computed$!:   ReturnType<typeof this.buildComputed$>;
+  hasPattern$!: ReturnType<typeof this.buildHasPattern$>;
 
   private subscription = new Subscription();
 
   constructor(
     private fb: FormBuilder,
     private state: MoireStateService,
-    private svgExport: SvgExportService
+    private svgExport: SvgExportService,
+    private dialog: MatDialog,
   ) {
-    this.computed$ = this.buildComputed$();
+    this.computed$   = this.buildComputed$();
+    this.hasPattern$ = this.buildHasPattern$();
+  }
+
+  private buildHasPattern$() {
+    return this.state.params$.pipe(map(p => !!p.customPattern));
   }
 
   private buildComputed$() {
     return this.state.params$.pipe(
       map(p => {
-        const D = p.viewerDist;
-        const d = Math.max(0.001, p.depthGap);
+        const D      = p.viewerDist;
+        const d      = Math.max(0.001, p.depthGap);
         const period = p.gridSize / p.cellCount;
-        const f = D / (D + d);
+        const f      = D / (D + d);
         return {
-          scaleFactor: f,
-          backGridPeriod: period * f,
+          scaleFactor:       f,
+          backGridPeriod:    period * f,
           moireFringePeriod: period * D / d,
         } as ComputedValues;
       })
@@ -74,6 +86,25 @@ export class ControlPanelComponent implements OnInit, OnDestroy {
         });
       })
     );
+  }
+
+  editPattern(): void {
+    const current = this.state.currentParams;
+    const data: PatternEditorData = {
+      cellCount:     current.cellCount,
+      existingImage: current.customPattern?.image,
+    };
+    const ref = this.dialog.open<PatternEditorComponent, PatternEditorData, Uint8Array | null>(
+      PatternEditorComponent,
+      { data, disableClose: false },
+    );
+    ref.afterClosed().subscribe(image => {
+      if (image) this.state.setCustomPattern(image);
+    });
+  }
+
+  clearPattern(): void {
+    this.state.clearCustomPattern();
   }
 
   reset(): void {

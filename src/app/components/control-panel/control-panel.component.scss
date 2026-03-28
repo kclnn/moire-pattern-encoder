@@ -86,6 +86,14 @@ mat-divider {
   }
 }
 
+.pattern-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+
 .actions {
   display: flex;
   gap: 8px;

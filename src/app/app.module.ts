@@ -12,17 +12,20 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatDialogModule } from '@angular/material/dialog';
 import { CommonModule } from '@angular/common';
 
 import { AppComponent } from './app.component';
 import { MoireCanvasComponent } from './components/moire-canvas/moire-canvas.component';
 import { ControlPanelComponent } from './components/control-panel/control-panel.component';
+import { PatternEditorComponent } from './components/pattern-editor/pattern-editor.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     MoireCanvasComponent,
     ControlPanelComponent,
+    PatternEditorComponent,
   ],
   imports: [
     BrowserModule,
@@ -37,6 +40,7 @@ import { ControlPanelComponent } from './components/control-panel/control-panel.
     MatIconModule,
     MatDividerModule,
     MatTooltipModule,
+    MatDialogModule,
   ],
   providers: [
     provideAnimationsAsync(),

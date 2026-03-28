@@ -1,3 +1,12 @@
+export interface CustomPattern {
+  /** Source image, N² pixels (0 = black, 255 = white), column-major: index = i*N + j */
+  image:       Uint8Array;
+  /** Per-cell x-phase offset for front grid vertical lines (cm), N² values */
+  frontPhaseX: Float32Array;
+  /** Per-cell y-phase offset for back grid horizontal lines in back space (cm), N² values */
+  backPhaseY:  Float32Array;
+}
+
 export interface MoireParams {
   /** Number of cells in each direction for both grids (N). Period = gridSize / N */
   cellCount: number;
@@ -17,6 +26,8 @@ export interface MoireParams {
   bgColor: string;
   /** Grid line color */
   lineColor: string;
+  /** Optional custom pattern overriding the uniform moiré */
+  customPattern?: CustomPattern;
 }
 
 export const DEFAULT_PARAMS: MoireParams = {
