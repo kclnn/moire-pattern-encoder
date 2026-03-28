@@ -1,8 +1,8 @@
 export interface CustomPattern {
   /** Per-cell x-phase offset for front grid vertical lines (cm), N² values, index = i*N + j */
   frontPhaseX: Float32Array;
-  /** Per-cell y-phase offset for back grid horizontal lines in back space (cm), N² values */
-  backPhaseY:  Float32Array;
+  /** Per-cell y-phase offset for back grid horizontal lines (cm), N² values. Present when pattern 2 has been applied. */
+  backPhaseY?: Float32Array;
 }
 
 export interface MoireParams {
@@ -31,6 +31,8 @@ export interface MoireParams {
    * Persists across parameter changes; present whenever the user has drawn a pattern.
    */
   patternImage?: Uint8Array;
+  /** Second pattern image, encoded into back grid Y offsets. */
+  patternImage2?: Uint8Array;
   /**
    * Encoded phase offsets derived from patternImage + the params at the time "Apply" was clicked.
    * Absent when patternImage is pending re-application (e.g. after cellCount changed).

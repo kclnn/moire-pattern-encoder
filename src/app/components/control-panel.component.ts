@@ -144,33 +144,63 @@ interface ComputedValues {
 
   <mat-divider></mat-divider>
 
-  <!-- Custom Pattern -->
-  <div class="section-title">Custom Pattern</div>
+  <!-- Pattern 1 -->
+  <div class="section-title">Pattern 1 (front grid, X offsets)</div>
 
   <div class="pattern-status active" *ngIf="patternActive$ | async">
     <mat-icon color="primary">check_circle</mat-icon>
-    <span>Pattern active</span>
+    <span>Pattern 1 active</span>
   </div>
   <div class="pattern-status pending" *ngIf="patternPending$ | async">
     <mat-icon color="warn">pending</mat-icon>
-    <span>Pattern inactive — click Apply</span>
+    <span>Pattern 1 inactive — click Apply</span>
   </div>
 
   <div class="actions">
     <button mat-stroked-button (click)="editPattern()"
-            matTooltip="Open the pattern editor to draw a custom moiré image">
-      <mat-icon>edit</mat-icon> Edit
+            matTooltip="Open the pattern editor to draw pattern 1">
+      <mat-icon>edit</mat-icon> Edit Pattern 1
     </button>
     <button mat-raised-button color="accent" (click)="applyPattern()"
             *ngIf="hasImage$ | async"
-            matTooltip="Compute offsets from the stored image using the current parameters">
-      <mat-icon>play_arrow</mat-icon> Apply Pattern
+            matTooltip="Encode pattern 1 into front grid X offsets using the current viewer position">
+      <mat-icon>play_arrow</mat-icon> Apply Pattern 1
     </button>
   </div>
   <div class="actions" *ngIf="hasImage$ | async">
     <button mat-stroked-button color="warn" (click)="clearPattern()"
-            matTooltip="Remove the pattern image and restore the uniform moiré">
+            matTooltip="Remove all patterns and restore the uniform moiré">
       <mat-icon>delete</mat-icon> Remove Pattern
+    </button>
+  </div>
+
+  <mat-divider></mat-divider>
+
+  <!-- Pattern 2 -->
+  <div class="section-title">Pattern 2 (back grid, Y offsets)</div>
+
+  <div class="pattern-status active" *ngIf="pattern2Active$ | async">
+    <mat-icon color="primary">check_circle</mat-icon>
+    <span>Pattern 2 active</span>
+  </div>
+  <div class="pattern-status pending" *ngIf="pattern2Pending$ | async">
+    <mat-icon color="warn">pending</mat-icon>
+    <span>Pattern 2 inactive — click Apply</span>
+  </div>
+  <div class="pattern-status" *ngIf="(hasImage2$ | async) && !(patternActive$ | async)">
+    <mat-icon>info</mat-icon>
+    <span>Apply Pattern 1 first</span>
+  </div>
+
+  <div class="actions">
+    <button mat-stroked-button (click)="editPattern2()"
+            matTooltip="Draw pattern 2 (encoded into back grid Y offsets)">
+      <mat-icon>edit</mat-icon> Edit Pattern 2
+    </button>
+    <button mat-raised-button color="accent" (click)="applyPattern2()"
+            *ngIf="(hasImage2$ | async) && (patternActive$ | async)"
+            matTooltip="Encode pattern 2 into back grid Y offsets using the current viewer position">
+      <mat-icon>play_arrow</mat-icon> Apply Pattern 2
     </button>
   </div>
 
@@ -310,8 +340,11 @@ export class ControlPanelComponent implements OnInit, OnDestroy {
   form!: FormGroup;
   computed$!:       ReturnType<typeof this.buildComputed$>;
   hasImage$!:       ReturnType<typeof this.buildHasImage$>;
+  hasImage2$!:      ReturnType<typeof this.buildHasImage2$>;
   patternActive$!:  ReturnType<typeof this.buildPatternActive$>;
   patternPending$!: ReturnType<typeof this.buildPatternPending$>;
+  pattern2Active$!: ReturnType<typeof this.buildPattern2Active$>;
+  pattern2Pending$!:ReturnType<typeof this.buildPattern2Pending$>;
 
   private subscription = new Subscription();
 
@@ -321,10 +354,13 @@ export class ControlPanelComponent implements OnInit, OnDestroy {
     private svgExport: SvgExportService,
     private dialog: MatDialog,
   ) {
-    this.computed$       = this.buildComputed$();
-    this.hasImage$       = this.buildHasImage$();
-    this.patternActive$  = this.buildPatternActive$();
-    this.patternPending$ = this.buildPatternPending$();
+    this.computed$        = this.buildComputed$();
+    this.hasImage$        = this.buildHasImage$();
+    this.hasImage2$       = this.buildHasImage2$();
+    this.patternActive$   = this.buildPatternActive$();
+    this.patternPending$  = this.buildPatternPending$();
+    this.pattern2Active$  = this.buildPattern2Active$();
+    this.pattern2Pending$ = this.buildPattern2Pending$();
   }
 
   private buildComputed$() {
@@ -356,6 +392,18 @@ export class ControlPanelComponent implements OnInit, OnDestroy {
   /** True when image exists but offsets are not yet computed (e.g. after cellCount change). */
   private buildPatternPending$() {
     return this.state.params$.pipe(map(p => !!p.patternImage && !p.customPattern));
+  }
+
+  private buildHasImage2$() {
+    return this.state.params$.pipe(map(p => !!p.patternImage2));
+  }
+
+  private buildPattern2Active$() {
+    return this.state.params$.pipe(map(p => !!p.customPattern?.backPhaseY));
+  }
+
+  private buildPattern2Pending$() {
+    return this.state.params$.pipe(map(p => !!p.patternImage2 && !!p.customPattern && !p.customPattern.backPhaseY));
   }
 
   ngOnInit(): void {
@@ -406,6 +454,25 @@ export class ControlPanelComponent implements OnInit, OnDestroy {
 
   applyPattern(): void {
     this.state.applyPattern();
+  }
+
+  editPattern2(): void {
+    const current = this.state.currentParams;
+    const data: PatternEditorData = {
+      cellCount:     current.cellCount,
+      existingImage: current.patternImage2,
+    };
+    const ref = this.dialog.open<PatternEditorComponent, PatternEditorData, Uint8Array | null>(
+      PatternEditorComponent,
+      { data, disableClose: false },
+    );
+    ref.afterClosed().subscribe(image => {
+      if (image) this.state.storePatternImage2(image);
+    });
+  }
+
+  applyPattern2(): void {
+    this.state.applyPattern2();
   }
 
   clearPattern(): void {

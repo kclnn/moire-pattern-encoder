@@ -119,10 +119,9 @@ function renderWithPattern(canvas: HTMLCanvasElement, params: MoireParams): void
         const by  = (cy - gridSize / 2 - ty) / f + gridSize / 2;
         const bi  = Math.min(Math.max(Math.floor(bx / P), 0), N - 1);
         const bj  = Math.min(Math.max(Math.floor(by / P), 0), N - 1);
-        const bfi = bi * N + bj;
-
+        const byOff = backPhaseY ? backPhaseY[bi * N + bj] : 0;
         const ubx = posMod(bx, P);
-        const uby = posMod(by - backPhaseY[bfi], P);
+        const uby = posMod(by - byOff, P);
         backOpaque = (ubx < Th || ubx > P - Th) || (uby < Th || uby > P - Th);
       }
 

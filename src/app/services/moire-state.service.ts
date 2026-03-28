@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { DEFAULT_PARAMS, MoireParams } from '../models/moire-params';
-import { encodePattern } from '../utils/pattern-encoder';
+import { encodePattern, encodePatternToBack } from '../utils/pattern-encoder';
 
 @Injectable({ providedIn: 'root' })
 export class MoireStateService {
@@ -41,13 +41,37 @@ export class MoireStateService {
   applyPattern(): void {
     const params = this.paramsSubject.value;
     if (!params.patternImage) return;
-    const { frontPhaseX, backPhaseY } = encodePattern(params.patternImage, params);
-    this.paramsSubject.next({ ...params, customPattern: { frontPhaseX, backPhaseY } });
+    const { frontPhaseX } = encodePattern(params.patternImage, params);
+    this.paramsSubject.next({ ...params, customPattern: { frontPhaseX } });
+  }
+
+  /** Stores the second pattern image. Does not encode yet. */
+  storePatternImage2(image: Uint8Array): void {
+    this.paramsSubject.next({
+      ...this.paramsSubject.value,
+      patternImage2: image,
+    });
+  }
+
+  /**
+   * Encodes the stored patternImage2 into back grid Y offsets using the current
+   * viewer position, and merges into the existing customPattern (preserving frontPhaseX).
+   * No-op if no patternImage2 is stored or pattern 1 is not yet applied.
+   */
+  applyPattern2(): void {
+    const params = this.paramsSubject.value;
+    if (!params.patternImage2 || !params.customPattern) return;
+    const { backPhaseY } = encodePatternToBack(params.patternImage2, params);
+    this.paramsSubject.next({
+      ...params,
+      customPattern: { ...params.customPattern, backPhaseY },
+    });
   }
 
   /** Removes both the stored image and the active encoded pattern. */
   clearPattern(): void {
-    const { patternImage: _img, customPattern: _cp, ...rest } = this.paramsSubject.value;
+    const { patternImage: _img, patternImage2: _img2, customPattern: _cp, ...rest } =
+      this.paramsSubject.value;
     this.paramsSubject.next(rest as MoireParams);
   }
 
