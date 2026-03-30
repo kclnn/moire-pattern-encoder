@@ -173,7 +173,7 @@ export class PatternEditorComponent implements AfterViewInit, OnDestroy {
   paintMode: PaintMode = 'black';
   importError: string | null = null;
 
-  private image!: Uint8Array;
+  private image: Uint8Array;
   private isDrawing = false;
   private lastCell = { i: -1, j: -1 };
 

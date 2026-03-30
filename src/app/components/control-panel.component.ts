@@ -1,8 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
-import { map, Subscription } from 'rxjs';
-import { debounceTime } from 'rxjs/operators';
+import { debounceTime, map, Subscription } from 'rxjs';
 import { DEFAULT_PARAMS } from '../models/moire-params';
 import { MoireStateService } from '../services/moire-state.service';
 import { SvgExportService } from '../services/svg-export.service';
@@ -338,13 +337,13 @@ mat-divider {
 })
 export class ControlPanelComponent implements OnInit, OnDestroy {
   form!: FormGroup;
-  computed$!:       ReturnType<typeof this.buildComputed$>;
-  hasImage$!:       ReturnType<typeof this.buildHasImage$>;
-  hasImage2$!:      ReturnType<typeof this.buildHasImage2$>;
-  patternActive$!:  ReturnType<typeof this.buildPatternActive$>;
-  patternPending$!: ReturnType<typeof this.buildPatternPending$>;
-  pattern2Active$!: ReturnType<typeof this.buildPattern2Active$>;
-  pattern2Pending$!:ReturnType<typeof this.buildPattern2Pending$>;
+  computed$:        ReturnType<typeof this.buildComputed$>;
+  hasImage$:        ReturnType<typeof this.buildHasImage$>;
+  hasImage2$:       ReturnType<typeof this.buildHasImage2$>;
+  patternActive$:   ReturnType<typeof this.buildPatternActive$>;
+  patternPending$:  ReturnType<typeof this.buildPatternPending$>;
+  pattern2Active$:  ReturnType<typeof this.buildPattern2Active$>;
+  pattern2Pending$: ReturnType<typeof this.buildPattern2Pending$>;
 
   private subscription = new Subscription();
 
@@ -407,17 +406,16 @@ export class ControlPanelComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    const p = DEFAULT_PARAMS;
     this.form = this.fb.group({
-      cellCount:      [p.cellCount],
-      thicknessRatio: [p.thicknessRatio],
-      depthGap:       [p.depthGap],
-      viewerDist:     [p.viewerDist],
-      viewerX:        [p.viewerX],
-      viewerY:        [p.viewerY],
-      bgColor:        [p.bgColor],
-      lineColor:      [p.lineColor],
-      gridVisibility: [p.gridVisibility],
+      cellCount:      [DEFAULT_PARAMS.cellCount],
+      thicknessRatio: [DEFAULT_PARAMS.thicknessRatio],
+      depthGap:       [DEFAULT_PARAMS.depthGap],
+      viewerDist:     [DEFAULT_PARAMS.viewerDist],
+      viewerX:        [DEFAULT_PARAMS.viewerX],
+      viewerY:        [DEFAULT_PARAMS.viewerY],
+      bgColor:        [DEFAULT_PARAMS.bgColor],
+      lineColor:      [DEFAULT_PARAMS.lineColor],
+      gridVisibility: [DEFAULT_PARAMS.gridVisibility],
     });
 
     this.subscription.add(
@@ -480,17 +478,7 @@ export class ControlPanelComponent implements OnInit, OnDestroy {
   }
 
   reset(): void {
-    this.form.setValue({
-      cellCount:      DEFAULT_PARAMS.cellCount,
-      thicknessRatio: DEFAULT_PARAMS.thicknessRatio,
-      depthGap:       DEFAULT_PARAMS.depthGap,
-      viewerDist:     DEFAULT_PARAMS.viewerDist,
-      viewerX:        DEFAULT_PARAMS.viewerX,
-      viewerY:        DEFAULT_PARAMS.viewerY,
-      bgColor:        DEFAULT_PARAMS.bgColor,
-      lineColor:      DEFAULT_PARAMS.lineColor,
-      gridVisibility: DEFAULT_PARAMS.gridVisibility,
-    });
+    this.form.patchValue(DEFAULT_PARAMS);
   }
 
   exportSvg(): void {

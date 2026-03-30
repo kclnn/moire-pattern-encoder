@@ -38,7 +38,7 @@ export class MoireCanvasComponent implements AfterViewInit, OnDestroy {
   @ViewChild('container') containerRef!: ElementRef<HTMLDivElement>;
 
   private subscription = new Subscription();
-  private resizeObserver!: ResizeObserver;
+  private resizeObserver?: ResizeObserver;
   private rafId = 0;
 
   constructor(private state: MoireStateService, private ngZone: NgZone) {}
@@ -47,27 +47,22 @@ export class MoireCanvasComponent implements AfterViewInit, OnDestroy {
     const canvas = this.canvasRef.nativeElement;
     const container = this.containerRef.nativeElement;
 
+    const scheduleRender = (params = this.state.currentParams) => {
+      cancelAnimationFrame(this.rafId);
+      this.rafId = requestAnimationFrame(() => {
+        canvas.width = container.clientWidth;
+        canvas.height = container.clientHeight;
+        render(canvas, params);
+      });
+    };
+
     // Run rendering outside Angular's zone to avoid unnecessary CD cycles
     this.ngZone.runOutsideAngular(() => {
-      this.resizeObserver = new ResizeObserver(() => {
-        cancelAnimationFrame(this.rafId);
-        this.rafId = requestAnimationFrame(() => {
-          canvas.width = container.clientWidth;
-          canvas.height = container.clientHeight;
-          render(canvas, this.state.currentParams);
-        });
-      });
+      this.resizeObserver = new ResizeObserver(() => scheduleRender());
       this.resizeObserver.observe(container);
 
       this.subscription.add(
-        this.state.params$.subscribe(params => {
-          cancelAnimationFrame(this.rafId);
-          this.rafId = requestAnimationFrame(() => {
-            canvas.width = container.clientWidth;
-            canvas.height = container.clientHeight;
-            render(canvas, params);
-          });
-        })
+        this.state.params$.subscribe(params => scheduleRender(params))
       );
     });
   }
